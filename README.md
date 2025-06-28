@@ -45,7 +45,7 @@ Dilengkapi dengan terjemahan gejala dan hasil prediksi ke Bahasa Indonesia agar 
 
 ```bash
 git clone https://github.com/efzynx/deteksi_penyakit.git
-cd repo-nya
+cd deteksi_penyakit
 ```
 ### 2. Buat venv
 ```bash
