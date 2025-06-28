@@ -14,7 +14,7 @@ Dilengkapi dengan terjemahan gejala dan hasil prediksi ke Bahasa Indonesia agar 
 
 ## 📸 Tampilan Aplikasi
 
-![demo-app](https://via.placeholder.com/800x400?text=Contoh+Tampilan+Aplikasi)
+![demo-app](https://raw.githubusercontent.com/efzynx/deteksi_penyakit/refs/heads/main/src/preview.jpg)
 
 ## 🧠 Teknologi yang Digunakan
 
