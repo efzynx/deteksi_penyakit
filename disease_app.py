@@ -3,22 +3,33 @@ import numpy as np
 import joblib
 import datetime
 
-# Load semua resource
-model = joblib.load("model.pkl")
-encoder = joblib.load("encoder.pkl")
-gejala_list = joblib.load("gejala.pkl")
-gejala_translate = joblib.load("translated_gejala.pkl")
-label_translate = joblib.load("translated_label.pkl")
+# --- FUNGSI UNTUK MEMUAT RESOURCE ---
+@st.cache_resource
+def load_resources():
+    model = joblib.load("model.pkl")
+    encoder = joblib.load("encoder.pkl")
+    gejala_list = joblib.load("gejala.pkl")
+    gejala_translate = joblib.load("translated_gejala.pkl")
+    label_translate = joblib.load("translated_label.pkl")
+    return model, encoder, gejala_list, gejala_translate, label_translate
 
-# Konfigurasi halaman
+# Muat semua resource
+try:
+    model, encoder, gejala_list, gejala_translate, label_translate = load_resources()
+except FileNotFoundError as e:
+    st.error(f"Gagal memuat file resource: {e}. Pastikan semua file .pkl ada di direktori yang sama.")
+    st.stop()
+
+
+# --- KONFIGURASI HALAMAN ---
 st.set_page_config(
     page_title="Deteksi Penyakit",
     page_icon="🏥",
     layout="centered",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# Custom CSS
+# --- CSS KUSTOM ---
 st.markdown("""
     <style>
         .stApp {
@@ -52,56 +63,54 @@ st.markdown("""
             }
         }
         
-        .symptoms-container {
-            max-height: 400px;
-            overflow-y: auto;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            margin-bottom: 20px;
-            background-color: var(--container-bg);
-        }
-        
         .stCheckbox>label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             font-size: 15px;
-            padding: 6px 8px;
-            margin: 2px 0;
-            border-radius: 4px;
+            padding: 8px;
+            margin: 4px 0;
+            border-radius: 6px;
             transition: all 0.2s;
+            border: 1px solid transparent;
+            cursor: pointer;
         }
         
         .stCheckbox>label:hover {
             background-color: rgba(76, 175, 80, 0.1);
+            border-color: rgba(76, 175, 80, 0.2);
         }
         
         .stButton>button {
-            background-color: #4CAF50;
-            color: white;
-            border-radius: 5px;
+            border-radius: 8px;
             padding: 10px 24px;
             font-weight: bold;
             transition: all 0.3s;
         }
-        
-        .reset-btn {
-            background-color: #f44336 !important;
-            margin-left: 10px;
+
+        /* Menargetkan tombol di dalam kolom pertama untuk styling */
+        div[data-testid="stHorizontalBlock"] > div:nth-child(1) button {
+            background-color: #22940d; 
+            color: white;             
+            border: 1px solid #22940d; 
         }
-        
-        .button-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+
+        /* Efek hover pada tombol */
+        div[data-testid="stHorizontalBlock"] > div:nth-child(1) button:hover {
+            background-color: #1b750b;
+            border: 1px solid #1b750b;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state for reset
+
 if 'reset' not in st.session_state:
     st.session_state.reset = False
 
+# --- UI APLIKASI ---
+
 # Header
-col_img, col_title = st.columns([1, 3])
+col_img, col_title = st.columns([1, 4])
 with col_img:
     st.image("https://cdn-icons-png.flaticon.com/512/2785/2785482.png", width=80)
 with col_title:
@@ -109,85 +118,79 @@ with col_title:
 
 st.markdown("""
     <div style='text-align: center; margin-bottom: 20px; color: var(--text-color);'>
-        Pilih gejala yang Anda alami dari daftar di bawah ini, lalu klik tombol <b>Prediksi</b> 
-        untuk mengetahui kemungkinan penyakit yang Anda derita.
+        Pilih gejala yang Anda alami, lalu klik tombol <b>Prediksi</b> untuk mengetahui kemungkinan penyakit Anda.
     </div>
 """, unsafe_allow_html=True)
 
-# Container untuk gejala dengan scroll
-st.subheader("Gejala yang Dialami")
-with st.container():
-    # Container dengan scroll
-    with st.expander("📋 Daftar Gejala", expanded=True):
-        with st.container():
-            st.markdown('<div class="symptoms-container">', unsafe_allow_html=True)
-            
-            selected_gejala = []
-            cols = st.columns(2)
-            
-            for i, g in enumerate(gejala_list):
-                with cols[i % 2]:
-                    # Use a unique key for each checkbox and handle reset
-                    checkbox_state = st.checkbox(
-                        gejala_translate[g], 
-                        key=f"checkbox_{g}",
-                        value=False if st.session_state.reset else st.session_state.get(f"checkbox_{g}", False),
-                        help="Centang jika Anda mengalami gejala ini"
-                    )
-                    if checkbox_state:
-                        selected_gejala.append(g)
-            
-            st.markdown('</div>', unsafe_allow_html=True)
 
-# Tombol aksi
+st.subheader("Pilih Gejala yang Anda Alami")
+
+with st.container(height=430, border=True):
+    selected_gejala = []
+    cols = st.columns(2)
+    
+    for i, g in enumerate(gejala_list):
+        with cols[i % 2]:
+            checkbox_state = st.checkbox(
+                gejala_translate.get(g, g.replace("_", " ").title()),
+                key=f"cb_{g}",
+                value=False if st.session_state.reset else st.session_state.get(f"cb_{g}", False)
+            )
+            if checkbox_state:
+                selected_gejala.append(g)
+
+st.write("")
+
+# --- Tombol Aksi ---
 col1, col2 = st.columns([3, 1])
 with col1:
-    predict_btn = st.button("🔍 Prediksi Sekarang", key="predict", use_container_width=True)
+    predict_btn = st.button("🔍 Prediksi Sekarang", use_container_width=True, type="primary")
 with col2:
-    reset_btn = st.button("🗑️ Reset Pilihan", key="reset_btn", type="secondary", use_container_width=True)
+    reset_btn = st.button("🗑️ Reset", use_container_width=True)
 
+# --- Logika Reset ---
 if reset_btn:
     st.session_state.reset = True
     st.rerun()
 else:
     st.session_state.reset = False
 
-# Proses prediksi
+# --- PROSES PREDIKSI ---
 if predict_btn:
     if not selected_gejala:
-        st.warning("⚠️ Silakan pilih minimal satu gejala terlebih dahulu.")
+        st.warning("⚠️ Silakan pilih minimal satu gejala terlebih dahulu.", icon="✋")
     else:
-        with st.spinner('Sedang menganalisis gejala...'):
+        with st.spinner('Menganalisis gejala Anda...'):
             input_array = np.zeros((1, len(gejala_list)))
             for g in selected_gejala:
-                input_array[0, gejala_list.index(g)] = 1
+                if g in gejala_list:
+                    input_array[0, gejala_list.index(g)] = 1
 
-            pred = model.predict(input_array)[0]
-            label_en = encoder.classes_[pred]
+            pred_index = model.predict(input_array)[0]
+            label_en = encoder.classes_[pred_index]
             label_id = label_translate.get(label_en, label_en)
             
             st.markdown(f"""
                 <div style='background-color: var(--success-bg); color: var(--success-text); 
-                            border-radius: 5px; padding: 15px; margin-bottom: 15px;'>
-                    <div style='font-size: 24px; font-weight: bold; margin-bottom: 10px;'>Hasil Prediksi</div>
+                            border: 1px solid #c3e6cb; border-radius: 8px; padding: 15px; margin-top: 20px;'>
+                    <div style='font-size: 18px; font-weight: bold; margin-bottom: 10px;'>Hasil Prediksi Penyakit:</div>
                     <div style='display: flex; align-items: center;'>
                         <span style='font-size: 30px; margin-right: 15px;'>🩺</span>
-                        <span style='font-size: 22px;'><b>{label_id}</b></span>
+                        <span style='font-size: 24px; font-weight: bold;'>{label_id}</span>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
 
             st.markdown("""
                 <div style='margin-top: 20px; padding: 15px; background-color: var(--advice-bg); 
-                            color: var(--advice-text); border-radius: 5px;'>
-                    <b>💡 Saran:</b> Hasil ini merupakan prediksi berdasarkan gejala yang dipilih. 
-                    Untuk diagnosis yang lebih akurat, disarankan untuk berkonsultasi langsung dengan dokter.
+                            color: var(--advice-text); border: 1px solid #bee5eb; border-radius: 8px;'>
+                    <b>💡 Penting:</b> Hasil ini adalah prediksi awal. Untuk diagnosis akurat, <b>sangat disarankan berkonsultasi langsung dengan dokter.</b>
                 </div>
             """, unsafe_allow_html=True)
 
-# Footer
+# --- FOOTER ---
 st.markdown(f"""
-    <div style='text-align: center; margin-top: 30px; color: var(--footer-text); font-size: 14px;'>
+    <div style='text-align: center; margin-top: 40px; color: var(--footer-text); font-size: 14px;'>
         <hr style='margin: 20px 0; border: 0.5px solid var(--border-color);'>
         Dibuat dengan ❤️ oleh Yaqin X Efzyn<br>
         © {datetime.datetime.now().year} Aplikasi Deteksi Penyakit
