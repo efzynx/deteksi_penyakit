@@ -192,7 +192,7 @@ if predict_btn:
 st.markdown(f"""
     <div style='text-align: center; margin-top: 40px; color: var(--footer-text); font-size: 14px;'>
         <hr style='margin: 20px 0; border: 0.5px solid var(--border-color);'>
-        Dibuat dengan ❤️ oleh Yaqin X Efzyn<br>
+        Dibuat dengan ❤️ oleh Yaqin<br>
         © {datetime.datetime.now().year} Aplikasi Deteksi Penyakit
     </div>
 """, unsafe_allow_html=True)
