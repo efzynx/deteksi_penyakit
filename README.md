@@ -47,8 +47,23 @@ Dilengkapi dengan terjemahan gejala dan hasil prediksi ke Bahasa Indonesia agar 
 git clone https://github.com/efzynx/deteksi_penyakit.git
 cd repo-nya
 ```
+### 2. Buat venv
+```bash
+python -m venv .venv
+```
+### 3. Aktifkan venv
+```bash
+# Windows command prompt
+.venv\Scripts\activate.bat
 
-### 2. Install dependencies:
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
+
+# macOS and Linux
+source .venv/bin/activate
+```
+
+### 4. Install dependencies:
 
 Pastikan sudah menggunakan Python 3.10+ dan virtual environment aktif
 
@@ -56,13 +71,13 @@ Pastikan sudah menggunakan Python 3.10+ dan virtual environment aktif
 pip install -r requirements.txt
 ```
 
-### 3. Jalankan aplikasi Streamlit:
+### 5. Jalankan aplikasi Streamlit:
 
 ```bash
 streamlit run disease_app.py
 ```
 
-### 4. Buka di browser:
+### 6. Buka di browser:
 - Local: http://localhost:8501
 - Network: http://<ip-lokal-kamu>:8501
 
