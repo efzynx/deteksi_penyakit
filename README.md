@@ -99,6 +99,7 @@ streamlit run disease_app.py
 
 ## 🧑‍💻 Kontributor
 
+- **Yaqin** — [GitHub](https://github.com/MohKhoirulYaqin)
 - **Fauzan** — [LinkedIn](https://linkedin.com/in/efzyn) | [GitHub](https://github.com/efzynx)
 
 ## 📜 Lisensi
