@@ -14,7 +14,7 @@ st.set_page_config(page_title="Deteksi Penyakit", layout="centered")
 st.title("🩺 Aplikasi Deteksi Penyakit")
 st.markdown("Pilih gejala yang Anda alami, lalu klik tombol **Prediksi** untuk mengetahui kemungkinan penyakit.")
 
-# Bagi jadi 2 kolom agar lebih enak dilihat
+# Membagi 2 kolom
 col1, col2 = st.columns(2)
 selected_gejala = []
 
@@ -41,4 +41,4 @@ if st.button("🔍 Prediksi Sekarang"):
         st.success(f"🤖 Hasil Prediksi: **{label_id}**")
 
 # st.markdown("---")
-st.caption("Dibuat dengan ❤️ oleh Yaqin")
+st.caption("Dibuat dengan ❤️ oleh Yaqin X Efzyn")
